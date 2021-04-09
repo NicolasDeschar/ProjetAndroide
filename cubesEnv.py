@@ -6,6 +6,7 @@ from PIL import Image
 from pylab import *
 from toolbox import discreteProb
 import create_file
+import random
 
 class SimpleActionSpace:  # class describing the action space of the markov decision process
     def __init__(self, action_list=[], nactions=0):
@@ -30,26 +31,34 @@ class SimpleActionSpace:  # class describing the action space of the markov deci
 
 
 class CubesEnv:
-    def __init__(self,h,nb_cubes,render,urdf_names,width=30,height=10,length=30,nb_action=12,actions_list=[]):
+    def __init__(self,h,nb_cubes,render,urdf_names,width=30,height=10,length=30,nb_action=12,gap=2,upAxisIndex=2,actions_list=[]):
         self._width=width
         self._heigth=height
         self._length=length
+
         self._cubesPos=[]
         self.nbCubes=nb_cubes
         self.urdfNames=urdf_names
         self.nb_states=width*height*length
+        self.nbAction=nb_action
+        self.gap=gap #distance between 2 cubes and the environnement
         self.action_space=SimpleActionSpace(actions_list,nactions=nb_action)
-        self.cam_target_pos=[np.random.randint(2,width),np.random.randint(2,length),
-        np.random.randint(2,height)]
+
+        self.cam_target_pos=[np.random.randint(gap,width-gap),np.random.randint(gap,length-gap),
+        np.random.randint(gap,height-gap)]
         self.cam_dist=1
         self.cam_yaw=np.random.randint(0,360)
         self.cam_roll=np.random.randint(0,360)
         self.cam_pitch=np.random.randint(0,360)
         self._render=render
         self._p=p
-        self.robotID=[]
+        self.robotID=[] #id of the cubes in the environnement
         self.h=h #height of cubes in the environnement
         #creer la position initiale
+        self._observation=None  #a image of the camera
+        self.upAxisIndex = upAxisIndex
+        self.projMatrix = [ 1.0825318098068237, 0.0, 0.0, 0.0, 0.0, 1.732050895690918, 0.0,
+         0.0, 0.0, 0.0, -1.0002000331878662, -1.0, 0.0, 0.0, -0.020002000033855438, 0.0]
         while(len(self._cubesPos)<nb_cubes):
             pos= [np.random.randint(0,self._width,1),np.random.randint(0,self._length,1),self.h]
             if(self.posDiff(pos)):
@@ -99,15 +108,68 @@ class CubesEnv:
             force=[10,10,10])
 
     def posDiff(self,pos):
+        """
+        check the gap between two cubes 
+        """
         for i in self._cubesPos:
-            if(abs(pos[0]-i[0])<2 and abs(pos[1]-i[1])<2):
+            if(abs(pos[0]-i[0])<self.gap and abs(pos[1]-i[1])<self.gap):
                 return False
         return True
+
+    def getExtendedObservation(self):
+        viewMat = p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos, self.cam_dist, self.cam_yaw, self.cam_pitch, self.cam_roll,
+							 upAxisIndex)
+        img_arr = p.getCameraImage(width=self._width,
+                               height=self._height,
+                               viewMatrix=viewMat,
+                               projectionMatrix=self.projMatrix)
+        rgb = img_arr[2]
+        np_img_arr = np.reshape(rgb, (self._height, self._width, 4))
+        self._observation = np_img_arr
+        return self._observation
+
+#a definir
+    def reward(self):
+        pass
+
+    def termination(self):
+        if():
+            return True
+        return False
+
+
+        
+                            
+
+
+    def getAction(self):
+        return getTypeAction(np.random.randint(self.nbAction))
+    
+    def getTypeAction(self,typeAction):
+        isForward=np.random.choices([-1,1])
+        if(typeAction==0):
+            self.cam_target_pos[0]+=isForward
+
+    def stepAlea(self,action):
+        p.stepSimulation()
+        viewMat = p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos, self.cam_dist, 
+        self.cam_yaw, self.cam_pitch, self.cam_roll,
+							 upAxisIndex)
+        done = self.termination()
+        reward = self.reward()
+        return self._observation, reward, done, {}
+
 
 
 
 def main():
     names=create_file.select_cubes({0:3,1:4})
     CubesEnv(h=2,nb_cubes=7,render=True,urdf_names=names)
+    done = False
+    while (not done):
+        action = []
+        state, reward, done, info = CubesEnv.step(action)
+        obs = CubesEnv.getExtendedObservation()
 
-main()
+if (__name__ == "__main__"):
+    main()
