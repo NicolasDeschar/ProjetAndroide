@@ -5,9 +5,6 @@ import torch.optim as optim
 import random
 import numpy as np
 
-
-discount_factor=1
-
 actions=[0,1,2,3,4,5,6,7,8,9,10,11]
 
 
@@ -38,11 +35,12 @@ def calc_net(seq):
 
 #structure de données stockant les transitions
 class transition():
-	def __init__(self,start,action,reward,end):
+	def __init__(self,start,action,reward,end,episode):
 		self.start=start
 		self.action=action
 		self.rewrad=reward
 		self.end=end
+		self.episode=episode
 
 #structure de données stockant la séquence
 class sequence(image):
@@ -51,10 +49,12 @@ class sequence(image):
 		self.actions=[]
 		self.images.append(image)
 
+	#ajoute une image et une action a la séquence
 	def update(self,image,action):
 		self.images.append(image)
 		self.actions.append(action)
 
+	#renvoie la séquence au temps i
 	def get(self,i):
 		return (images[:i],actions[:i-1])
 
@@ -69,27 +69,29 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1):
 
 	#initialisation de l'historique
 	history=[]
+	sequences=[]
 	for i in range(nb_episodes):
 		#initialisation de la sequence
-		s=sequence(get_image)
+		sequences.append(sequence(get_image))
 		for j in range(max_iter):
 			#choix epsilon-greedy de l'action
 			r=random.random()
 			if r<epsilon:
 				a=random.choice(actions)
 			else:
-				output=calc_net(sequence.get[j])
+				output=calc_net(s.get[j])
 				a=np.argmax(output)
 			#step
 			env.step(a)
 			#update de la sequence
 			img=get_image()
-			sequence.update(img,a)
+			sequences[i].update(img,a)
 			#enregistrement de la transition dans l'historique
 			reward=calc_reward(img)
-			history.append(transition(j,a,reward,j+1))
+			history.append(transition(j,a,reward,j+1,i))
 			#mini-batch
 			sample=random.sample(history,1)
+			sequence=sequences[sample.episode]
 
 			if reward>0.99:
 				finished=True
