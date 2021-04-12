@@ -4,8 +4,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 import random
 import numpy as np
+import CubesEnv as env
+import Classifieur as cl
 
-actions=[0,1,2,3,4,5,6,7,8,9,10,11]
 
 
 
@@ -30,11 +31,15 @@ class Net(nn.Module):
 #fonction executant le nn sur la sequence
 def calc_net(seq):
 	imagesi,actionsi=seq
-	return net(imagesi)
+	output=map(net,imagesi)
+	out_meaned=[]
+	for i in range(len(output[0])):
+		out_meaned.append(np.mean([output[j][i] for j in range(len(output))]))
+	return out_meaned
 
 
 #structure de données stockant les transitions
-class transition():
+class transition:
 	def __init__(self,start,action,reward,end,episode):
 		self.start=start
 		self.action=action
@@ -43,7 +48,7 @@ class transition():
 		self.episode=episode
 
 #structure de données stockant la séquence
-class sequence(image):
+class sequence:
 	def __init__(self,image):
 		self.images=[]
 		self.actions=[]
@@ -60,19 +65,22 @@ class sequence(image):
 
 
 
-def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1):
+def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0.01):
 	#initialisation du NN
 	net=Net()
-	optimizer = optim.SGD(net.parameters(), lr=0.01)
+	optimizer = optim.SGD(net.parameters(), lr=learning_rate)
 	criterion = nn.MSELoss()
 
-
+	#creation de l'environnement
+	env.start_env()
 	#initialisation de l'historique
 	history=[]
 	sequences=[]
 	for i in range(nb_episodes):
+		#réinitialisation de l'environnement
+		env.reset_env()
 		#initialisation de la sequence
-		sequences.append(sequence(get_image))
+		sequences.append(sequence(env.get_image))
 		for j in range(max_iter):
 			#choix epsilon-greedy de l'action
 			r=random.random()
@@ -84,15 +92,15 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1):
 			#step
 			env.step(a)
 			#update de la sequence
-			img=get_image()
+			img=env.get_image()
 			sequences[i].update(img,a)
 			#enregistrement de la transition dans l'historique
-			reward=calc_reward(img)
+			reward=cl.calc_reward(img)
 			history.append(transition(j,a,reward,j+1,i))
 			#mini-batch
 			sample=random.sample(history,1)
 			sequence=sequences[sample.episode]
-
+			#test de terminaison
 			if reward>0.99:
 				finished=True
 			else :
@@ -100,6 +108,7 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1):
 			#calcul de l'objectif
 			if finished :
 				y_i=sample.reward
+				break
 			else :
 				y_i=sample.reward+alpha*np.max(calc_net(sequence.get(sample.end)))
 
@@ -109,6 +118,7 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1):
 			loss = criterion(output[sample.action],y_i)
 			loss.backward()
 			optimizer.step()
+	env.close()
 
 
 
