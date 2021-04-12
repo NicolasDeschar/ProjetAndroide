@@ -1,3 +1,4 @@
 import cubesEnv as env
 
-env.learning_simu()
+if __name__=='__main__':
+	env.learning_simu()
