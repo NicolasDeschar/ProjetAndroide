@@ -161,6 +161,7 @@ def start_env():
     CubesEnv(h=2,nb_cubes=7,render=True,urdf_names=names)
 
 def reset_env():
+    the_cam=cam([0,0,0],0,0,0)
     CubesEnv.reset()
 
 
@@ -226,7 +227,7 @@ def step(action):
 
 def get_image():
     # TODO
-    pass
+    pass 
 
 
 
