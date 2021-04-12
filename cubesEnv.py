@@ -63,7 +63,7 @@ class CubesEnv:
         while(len(self._cubesPos)<nb_cubes):
             pos= [np.random.randint(0,self._width,1),np.random.randint(0,self._length,1),self.h]
             if(self.posDiff(pos)):
-	            self._cubesPos.append(pos)
+                self._cubesPos.append(pos)
     
         if(self._render):
             p.connect(p.GUI)
@@ -119,7 +119,7 @@ class CubesEnv:
 
     def getExtendedObservation(self):
         viewMat = p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos, self.cam_dist, self.cam_yaw, self.cam_pitch, self.cam_roll,
-							 upAxisIndex)
+                             upAxisIndex)
         img_arr = p.getCameraImage(width=self._width,
                                height=self._height,
                                viewMatrix=viewMat,
@@ -150,82 +150,82 @@ class CubesEnv:
         p.stepSimulation()
         viewMat = p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos, self.cam_dist, 
         self.cam_yaw, self.cam_pitch, self.cam_roll,
-							 upAxisIndex)
+                             upAxisIndex)
         done = self.termination()
         reward = self.reward()
         return self._observation, reward, done, {}
 
 
 def start_env():
-	names=create_file.select_cubes({0:3,1:4})
+    names=create_file.select_cubes({0:3,1:4})
     CubesEnv(h=2,nb_cubes=7,render=True,urdf_names=names)
 
 def reset_env():
-	CubesEnv.reset()
+    CubesEnv.reset()
 
 
 def stop():
-	CubesEnv.close()
+    CubesEnv.close()
 
 
 class cam:
-	def __init__(self,cam_pos, yaw,pitch,roll):
-		self.cam_pos=cam_pos
-		self.yaw=yaw
-		self.pitch=pitch
-		self.roll=roll
-		self.cam_distance=2
-		self.upAxisIndex=2
+    def __init__(self,cam_pos, yaw,pitch,roll):
+        self.cam_pos=cam_pos
+        self.yaw=yaw
+        self.pitch=pitch
+        self.roll=roll
+        self.cam_distance=2
+        self.upAxisIndex=2
 
-	def move_cam():
-		CubesEnv.computeViewMatrixFromYawPitchRoll(self.cam_pos,self.cam_distance,self.yaw,self.pitch,self.roll,self.upAxisIndex)
+    def move_cam():
+        CubesEnv.computeViewMatrixFromYawPitchRoll(self.cam_pos,self.cam_distance,self.yaw,self.pitch,self.roll,self.upAxisIndex)
 
 
 
 def step(action):
 
-	if action==0:
-		the_cam.cam_pos[0]+=1
-		the_cam.move_cam()
-	elif action==1:
-		the_cam.cam_pos[0]-=1
-		the_cam.move_cam()
-	elif action==2:
-		the_cam.cam_pos[1]+=1
-		the_cam.move_cam()
-	elif action==3:
-		the_cam.cam_pos[1]-=1
-		the_cam.move_cam()
-	elif action==4:
-		the_cam.cam_pos[2]+=1
-		the_cam.move_cam()
-	elif action==5:
-		the_cam.cam_pos[2]-=1
-		the_cam.move_cam()
-	elif action==6:
-		the_cam.yaw+=1
-		the_cam.move_cam()
-	elif action==7:
-		the_cam.yaw-=1
-		the_cam.move_cam()
-	elif action==8:
-		the_cam.pitch+=1
-		the_cam.move_cam()
-	elif action==9:
-		the_cam.pitch-=1
-		the_cam.move_cam()
-	elif action==10:
-		the_cam.roll+=1
-		the_cam.move_cam()
-	elif action==11:
-		the_cam.roll-=1
-		the_cam.move_cam()
-	else :
-		pass
+    if action==0:
+        the_cam.cam_pos[0]+=1
+        the_cam.move_cam()
+    elif action==1:
+        the_cam.cam_pos[0]-=1
+        the_cam.move_cam()
+    elif action==2:
+        the_cam.cam_pos[1]+=1
+        the_cam.move_cam()
+    elif action==3:
+        the_cam.cam_pos[1]-=1
+        the_cam.move_cam()
+    elif action==4:
+        the_cam.cam_pos[2]+=1
+        the_cam.move_cam()
+    elif action==5:
+        the_cam.cam_pos[2]-=1
+        the_cam.move_cam()
+    elif action==6:
+        the_cam.yaw+=1
+        the_cam.move_cam()
+    elif action==7:
+        the_cam.yaw-=1
+        the_cam.move_cam()
+    elif action==8:
+        the_cam.pitch+=1
+        the_cam.move_cam()
+    elif action==9:
+        the_cam.pitch-=1
+        the_cam.move_cam()
+    elif action==10:
+        the_cam.roll+=1
+        the_cam.move_cam()
+    elif action==11:
+        the_cam.roll-=1
+        the_cam.move_cam()
+    else :
+        pass
 
 
 def get_image():
-	# TODO
+    # TODO
 
 
 
@@ -241,8 +241,8 @@ def main():
 '''
 
 def learning_simu(episodes=100,itera=5000,eps=0.01,a=0.1, lr=0.01):
-	the_cam=cam([0,0,0],0,0,0)
-	q.deep_Q(episodes,itera,eps,a,lr)
+    the_cam=cam([0,0,0],0,0,0)
+    q.deep_Q(episodes,itera,eps,a,lr)
 
 
 
