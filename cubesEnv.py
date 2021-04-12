@@ -226,6 +226,7 @@ def step(action):
 
 def get_image():
     # TODO
+    pass
 
 
 
