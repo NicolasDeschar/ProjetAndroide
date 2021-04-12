@@ -7,6 +7,7 @@ from pylab import *
 from toolbox import discreteProb
 import create_file
 import random
+import q_learning as q
 
 class SimpleActionSpace:  # class describing the action space of the markov decision process
     def __init__(self, action_list=[], nactions=0):
@@ -137,11 +138,6 @@ class CubesEnv:
             return True
         return False
 
-
-        
-                            
-
-
     def getAction(self):
         return getTypeAction(np.random.randint(self.nbAction))
     
@@ -160,8 +156,80 @@ class CubesEnv:
         return self._observation, reward, done, {}
 
 
+def start_env():
+	names=create_file.select_cubes({0:3,1:4})
+    CubesEnv(h=2,nb_cubes=7,render=True,urdf_names=names)
+
+def reset_env():
+	CubesEnv.reset()
 
 
+def stop():
+	CubesEnv.close()
+
+
+class cam:
+	def __init__(self,cam_pos, yaw,pitch,roll):
+		self.cam_pos=cam_pos
+		self.yaw=yaw
+		self.pitch=pitch
+		self.roll=roll
+		self.cam_distance=2
+		self.upAxisIndex=2
+
+	def move_cam():
+		CubesEnv.computeViewMatrixFromYawPitchRoll(self.cam_pos,self.cam_distance,self.yaw,self.pitch,self.roll,self.upAxisIndex)
+
+
+
+def step(action):
+
+	if action==0:
+		the_cam.cam_pos[0]+=1
+		the_cam.move_cam()
+	elif action==1:
+		the_cam.cam_pos[0]-=1
+		the_cam.move_cam()
+	elif action==2:
+		the_cam.cam_pos[1]+=1
+		the_cam.move_cam()
+	elif action==3:
+		the_cam.cam_pos[1]-=1
+		the_cam.move_cam()
+	elif action==4:
+		the_cam.cam_pos[2]+=1
+		the_cam.move_cam()
+	elif action==5:
+		the_cam.cam_pos[2]-=1
+		the_cam.move_cam()
+	elif action==6:
+		the_cam.yaw+=1
+		the_cam.move_cam()
+	elif action==7:
+		the_cam.yaw-=1
+		the_cam.move_cam()
+	elif action==8:
+		the_cam.pitch+=1
+		the_cam.move_cam()
+	elif action==9:
+		the_cam.pitch-=1
+		the_cam.move_cam()
+	elif action==10:
+		the_cam.roll+=1
+		the_cam.move_cam()
+	elif action==11:
+		the_cam.roll-=1
+		the_cam.move_cam()
+	else :
+		pass
+
+
+def get_image():
+	# TODO
+
+
+
+'''
 def main():
     names=create_file.select_cubes({0:3,1:4})
     CubesEnv(h=2,nb_cubes=7,render=True,urdf_names=names)
@@ -170,6 +238,11 @@ def main():
         action = []
         state, reward, done, info = CubesEnv.step(action)
         obs = CubesEnv.getExtendedObservation()
+'''
 
-if (__name__ == "__main__"):
-    main()
+def learning_simu(episodes=100,itera=5000,eps=0.01,a=0.1, lr=0.01):
+	the_cam=cam([0,0,0],0,0,0)
+	q.deep_Q(episodes,itera,eps,a,lr)
+
+
+
