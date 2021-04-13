@@ -7,7 +7,7 @@ from pylab import *
 from toolbox import discreteProb
 import create_file
 import random
-import q_learning as q
+import Q_learning as q
 import toolbox
 
 class SimpleActionSpace:  # class describing the action space of the markov decision process
@@ -37,7 +37,7 @@ class CubesEnv:
         self.nn=NN
         
         self._width=width
-        self._heigth=height
+        self._height=height
         self._length=length
         
         self._cubesPos=[]
@@ -59,7 +59,7 @@ class CubesEnv:
         self.robotID=[] #id of the cubes in the environnement
         self.h=h #height of cubes in the environnement
         #creer la position initiale
-        self._observation=None  #a image of the camera
+        self._observation=None  #an image of the camera
         self.upAxisIndex = upAxisIndex
         self.projMatrix = [ 1.0825318098068237, 0.0, 0.0, 0.0, 0.0, 1.732050895690918, 0.0,
          0.0, 0.0, 0.0, -1.0002000331878662, -1.0, 0.0, 0.0, -0.020002000033855438, 0.0]
@@ -75,8 +75,13 @@ class CubesEnv:
 
 
 
+    def move_cam():
+        p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos,self.cam_dist,self.cam_yaw,self.cam_pitch,self.cam_roll,self.upAxisIndex)
+
+
+
     def reset(self):
-        create_file.create_plane(self._width,self._length,self._heigth) 
+        create_file.create_plane(self._width,self._length,self._height) 
         p.resetSimulation()
         p.setGravity(0,0,-10)
         p.loadURDF("plane/plane.urdf", [0, 0, 0])
@@ -97,10 +102,12 @@ class CubesEnv:
             p.getQuaternionFromEuler([0,0,0]),#childFrameOrientation relatvie to child center of mass or relative to world coords if childBody is -1
             0)#physics client ID
         self.robotID=robot_id
+        '''
         for i in range(10000):
             p.stepSimulation()
             self.my_setJointMotorControlMultiDof()
             time.sleep(1./240.)
+        '''
 
 
     def my_setJointMotorControlMultiDof(self):
@@ -121,12 +128,8 @@ class CubesEnv:
         return True
 
     def getExtendedObservation(self):
-        viewMat = p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos, self.cam_dist, self.cam_yaw, self.cam_pitch, self.cam_roll,
-                             upAxisIndex)
-        img_arr = p.getCameraImage(width=self._width,
-                               height=self._height,
-                               viewMatrix=viewMat,
-                               projectionMatrix=self.projMatrix)
+        viewMat = p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos, self.cam_dist, self.cam_yaw, self.cam_pitch, self.cam_roll,self.upAxisIndex)
+        img_arr = p.getCameraImage(width=self._width,height=self._height,viewMatrix=viewMat,projectionMatrix=self.projMatrix)
         rgb = img_arr[2]
         np_img_arr = np.reshape(rgb, (self._height, self._width, 4))
         self._observation = np_img_arr
@@ -166,10 +169,19 @@ class CubesEnv:
 
 def start_env():
     names=create_file.select_cubes({0:3,1:4})
-    CubesEnv(h=2,nb_cubes=7,render=True,urdf_names=names)
+    env=CubesEnv(NN=None,h=2,nb_cubes=7,render=True,urdf_names=names)
+    return env
+
+def test_cam():
+    p.computeViewMatrixFromYawPitchRoll([10,10,10],2,5,-15,10,2)
 
 def reset_env():
-    the_cam=cam([0,0,0],0,0,0)
+    CubesEnv.cam_target_pos=[np.random.randint(gap,width-gap),np.random.randint(gap,length-gap),np.random.randint(gap,height-gap)]
+    self.cam_dist=1
+    self.cam_yaw=np.random.randint(0,360)
+    self.cam_roll=np.random.randint(0,360)
+    self.cam_pitch=np.random.randint(0,360)
+    
     CubesEnv.reset()
 
 
@@ -177,65 +189,50 @@ def stop():
     CubesEnv.close()
 
 
-class cam:
-    def __init__(self,cam_pos, yaw,pitch,roll):
-        self.cam_pos=cam_pos
-        self.yaw=yaw
-        self.pitch=pitch
-        self.roll=roll
-        self.cam_distance=2
-        self.upAxisIndex=2
-
-    def move_cam():
-        CubesEnv.computeViewMatrixFromYawPitchRoll(self.cam_pos,self.cam_distance,self.yaw,self.pitch,self.roll,self.upAxisIndex)
-
-
-
 def step(action):
 
     if action==0:
-        the_cam.cam_pos[0]+=1
-        the_cam.move_cam()
+        env.cam_target_pos[0]+=1
+        env.move_cam()
     elif action==1:
-        the_cam.cam_pos[0]-=1
-        the_cam.move_cam()
+        env.cam_target_pos[0]-=1
+        env.move_cam()
     elif action==2:
-        the_cam.cam_pos[1]+=1
-        the_cam.move_cam()
+        env.cam_target_pos[1]+=1
+        env.move_cam()
     elif action==3:
-        the_cam.cam_pos[1]-=1
-        the_cam.move_cam()
+        env.cam_target_pos[1]-=1
+        env.move_cam()
     elif action==4:
-        the_cam.cam_pos[2]+=1
-        the_cam.move_cam()
+        env.cam_target_pos[2]+=1
+        env.move_cam()
     elif action==5:
-        the_cam.cam_pos[2]-=1
-        the_cam.move_cam()
+        env.cam_target_pos[2]-=1
+        env.move_cam()
     elif action==6:
-        the_cam.yaw+=1
-        the_cam.move_cam()
+        env.cam_yaw+=1
+        env.move_cam()
     elif action==7:
-        the_cam.yaw-=1
-        the_cam.move_cam()
+        env.cam_yaw-=1
+        env.move_cam()
     elif action==8:
-        the_cam.pitch+=1
-        the_cam.move_cam()
+        env.cam_pitch+=1
+        env.move_cam()
     elif action==9:
-        the_cam.pitch-=1
-        the_cam.move_cam()
+        env.cam_pitch-=1
+        env.move_cam()
     elif action==10:
-        the_cam.roll+=1
-        the_cam.move_cam()
+        env.cam_roll+=1
+        env.move_cam()
     elif action==11:
-        the_cam.roll-=1
-        the_cam.move_cam()
+        env.cam_roll-=1
+        env.move_cam()
     else :
         pass
 
 
-def get_image():
-    # TODO
-    pass 
+def get_image(env):
+    return env.getExtendedObservation()
 
 
 
@@ -251,5 +248,5 @@ def main():
 '''
 
 def learning_simu(episodes=100,itera=5000,eps=0.01,a=0.1, lr=0.01):
-    the_cam=cam([0,0,0],0,0,0)
+    env=CubesEnv(h=2,nb_cubes=7,render=True,urdf_names=names)
     q.deep_Q(episodes,itera,eps,a,lr)
