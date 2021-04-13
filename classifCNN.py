@@ -91,9 +91,7 @@ def CNNodd(correct,total):
 
 
 
-
 if (__name__ == "__main__"):
-	"""
 	root_dir="mnist_png"
 	transform2=transforms.Compose([transforms.Grayscale(1),transforms.ToTensor(), transforms.Normalize((0.1307,), 	(0.3081,))])
 	train_data=ImageFolder(root=os.path.join(root_dir,"training"),transform=transform2)
@@ -102,7 +100,6 @@ if (__name__ == "__main__"):
 	batch_size=50
 	train11_loader=torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True)
 	test11_loader =torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=True)
-	"""
 	cubes_data=ImageFolder(root="cubes/img",transform=transform2)
 	batch_size=10 # tu as 10 images dans x quand tu feras for x,y in loader
 	loader=torch.utils.data.DataLoader(cubes_data, batch_size=batch_size, shuffle=True)
