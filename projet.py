@@ -1,5 +1,5 @@
-import cubesEnv as env
+import Q_learning as Q
 
 if __name__=='__main__':
-	env.learning_simu()
+	Q.deep_Q()
 	
