@@ -6,16 +6,22 @@ import random
 import numpy as np
 import cubesEnv as env
 import classifCNN as cl
+import creer_Env as ce
 
+
+def convert_from_image_to_tensor(img):
+    transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5,0.5), (0.5, 0.5, 0.5,0.5))])
+    temp=transform(img)
+    return temp.unsqueeze(1)
 
 
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1=torch.nn.Conv2d(1,6,5)
+        self.conv1=torch.nn.Conv2d(1,4,5)
         self.pool=torch.nn.MaxPool2d(2,2)
-        self.conv2=torch.nn.Conv2d(6,14,5)
+        self.conv2=torch.nn.Conv2d(4,14,5)
         self.fc1=torch.nn.Linear(14*4*4,100)
         self.fc3=torch.nn.Linear(100,12)
 
@@ -31,10 +37,13 @@ class Net(nn.Module):
 #fonction executant le nn sur la sequence
 def calc_net(seq):
     imagesi,actionsi=seq
-    output=map(net,imagesi)
-    out_meaned=[]
-    for i in range(len(output[0])):
-        out_meaned.append(np.mean([output[j][i] for j in range(len(output))]))
+    output_flattend=[]
+
+    for i in range(len(imagesi)):
+        transformed=convert_from_image_to_tensor(imagesi[i])
+        output=net(transformed)
+        output_flattend.append(np.mean(output,axis=0))
+    out_meaned=np.mean(output_flattend,axis=0)
     return out_meaned
 
 
@@ -48,7 +57,7 @@ class transition:
         self.episode=episode
 
 #structure de données stockant la séquence
-class sequence:
+class Sequence:
     def __init__(self,image):
         self.images=[]
         self.actions=[]
@@ -61,7 +70,7 @@ class sequence:
 
     #renvoie la séquence au temps i
     def get(self,i):
-        return (images[:i],actions[:i-1])
+        return (self.images[:i],self.actions[:i-1])
 
 
 
@@ -73,27 +82,28 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0
     criterion = nn.MSELoss()
 
     #creation de l'environnement
-    env.start_env()
+    envi=ce.start_env()
     #initialisation de l'historique
     history=[]
     sequences=[]
     for i in range(nb_episodes):
         #réinitialisation de l'environnement
-        env.reset_env()
+        ce.reset_env(envi)
         #initialisation de la sequence
-        sequences.append(sequence(env.get_image))
+        sequence=Sequence(envi.getExtendedObservation())
+        sequences.append(sequence)
         for j in range(max_iter):
             #choix epsilon-greedy de l'action
             r=random.random()
             if r<epsilon:
                 a=random.choice(actions)
             else:
-                output=calc_net(s.get[j])
+                output=calc_net(sequence.get(j))
                 a=np.argmax(output)
             #step
-            state, reward, done, info=env.step(a)
+            state, reward, done, info=envi.step(a)
             #update de la sequence
-            img=env.get_image()
+            img=envi.getExtendedObservation()
             sequences[i].update(img,a)
             #enregistrement de la transition dans l'historique
             reward=cl.calc_reward(img)
@@ -106,14 +116,17 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0
                 y_i=sample.reward
                 break
             else :
-                y_i=sample.reward+alpha*np.argmax(calc_net(sequence.get(sample.end)))
+                y_i=sample.reward+alpha*np.max(calc_net(sequence.get(sample.end)))
 
             #descente de gradient stochastique
             optimizer.zero_grad()
             output=calc_net(sequence.get(sample.start))
+            t_output=torch.from_numpy(output)
+            t_y_i=torch.from_numpy(y_i)
             loss = criterion(output[sample.action],y_i)
             loss.backward()
             optimizer.step()
+            sequences[i]=sequence
     env.close()
 
 
