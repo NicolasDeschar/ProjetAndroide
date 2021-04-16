@@ -40,7 +40,11 @@ def CNNtrain(nbEntr,NN,loader,lr=1e-3):
     optimizer=torch.optim.Adam(NN.parameters(),lr) #lr : learning rate
     lloss=[]
     for i in range(nbEntr):
+        w=0
         for k,(x,y) in enumerate(loader):
+            if w%100==0:
+                print("done ",w,"of ",len(loader))
+            w+=1
             NN.zero_grad() #
             output=NN(x)
             loss=crossEL(output,y)
