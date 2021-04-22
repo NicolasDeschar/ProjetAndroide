@@ -7,29 +7,27 @@ import numpy as np
 import cubesEnv as env
 import classifCNN as cl
 import creer_Env as ce
+import toolbox as tb
 
-
-def convert_from_image_to_tensor(img):
-    transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5,0.5), (0.5, 0.5, 0.5,0.5))])
-    temp=transform(img)
-    return temp.unsqueeze(1)
 
 
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1=torch.nn.Conv2d(1,4,5)
+        self.conv1=torch.nn.Conv2d(4,25,5)
         self.pool=torch.nn.MaxPool2d(2,2)
-        self.conv2=torch.nn.Conv2d(4,14,5)
-        self.fc1=torch.nn.Linear(14*4*4,100)
-        self.fc3=torch.nn.Linear(100,12)
+        self.conv2=torch.nn.Conv2d(25,100,5)
+        self.fc1=torch.nn.Linear(100*4*4,10000)
+        self.fc2=torch.nn.Linear(10000,1000)
+        self.fc3=torch.nn.Linear(1000,12)
 
     def forward(self,x):
         x=self.pool(F.relu(self.conv1(x)))
         x=self.pool(F.relu(self.conv2(x)))
-        x=x.view(-1,14*4*4)
+        x=x.view(-1,100*4*4)
         x=F.relu(self.fc1(x))
+        x=self.fc2(x)
         x=self.fc3(x)
         return x
 
@@ -40,7 +38,7 @@ def calc_net(seq):
     output_flattend=[]
 
     for i in range(len(imagesi)):
-        transformed=convert_from_image_to_tensor(imagesi[i])
+        transformed=tb.convert_from_image_to_tensor(imagesi[i])
         output=net(transformed)
         output_flattend.append(np.mean(output,axis=0))
     out_meaned=np.mean(output_flattend,axis=0)
@@ -93,6 +91,7 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0
         sequence=Sequence(envi.getExtendedObservation())
         sequences.append(sequence)
         for j in range(max_iter):
+
             #choix epsilon-greedy de l'action
             r=random.random()
             if r<epsilon:
@@ -106,7 +105,6 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0
             img=envi.getExtendedObservation()
             sequences[i].update(img,a)
             #enregistrement de la transition dans l'historique
-            reward=cl.calc_reward(img)
             history.append(transition(j,a,reward,j+1,i))
             #mini-batch
             sample=random.sample(history,1)
