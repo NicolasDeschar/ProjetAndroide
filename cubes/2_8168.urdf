@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<robot name="test_bot">
+  <link name="baseLink">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.015416666666666665" ixy="0.0" ixz="0.0" iyy="0.011408333333333333" iyz="0.0" izz="0.006408333333333333"/>
+    </inertial>
+  </link>
+
+ <link name="cube_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0.0"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.015416666666666665" ixy="0.0" ixz="0.0" iyy="0.011408333333333333" iyz="0.0" izz="0.006408333333333333"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.0"/>
+      <geometry>
+         <mesh filename='cubes/2_8168.obj' scale='1 1 1'/>      </geometry>
+      <material name="material_box">
+        <color rgba="1 1 1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.0"/>
+      <geometry>
+        <box size="0.152335 0.27869 0.10206699999999999"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="cube_to_base" type="spherical">
+    <parent link="baseLink"/>
+    <child link="cube_link"/>
+    <origin rpy="0 0 0" xyz="0 0.0 0.0"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="35.0" lower="0.001" upper="0.36" velocity="0.8"/>
+  </joint>
+</robot>
+
