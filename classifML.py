@@ -1,4 +1,4 @@
-from rn import xtest,ytest,xtrain,ytrain
+import loadData as *
 import numpy as np
 
 def learnBernoulli ( X,Y ):
@@ -21,6 +21,10 @@ def logpobsBernoulli(X, theta):
         res[j]=np.sum(X*np.log(theta[j])+(1-X)*np.log(1-theta[j]))
     return res
 
+dtest,dtrain=loadDataMNIST()
+xtest,ytest,xtrain,ytrain=getDataMNIST(dtest,dtrain)
+dataAlea=class10("ft")
+xtest10,ytest10,xtrain10,ytrain10=getDataPlus(dtest,dtrain,dataAlea[:900],dataAlea[900:])
 
 Xb_train = np.where(xtrain>0, 1, 0)
 Xb_test  = np.where(xtest>0, 1, 0)
