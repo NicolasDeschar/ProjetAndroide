@@ -79,7 +79,7 @@ class CubesEnv:
 			p.connect(p.GUI)
 		self.reset()
 	
-	def move_cam(self): #oublie pas le self
+	def move_cam(self):
 		p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos,
 				self.cam_dist,self.cam_yaw,self.cam_pitch,
 				self.cam_roll,self.cam_upAxisIndex)
@@ -200,45 +200,47 @@ class CubesEnv:
 				
 
 
-	def step(self,action): #IL FAUT DONNER L ENVIRONNEMENT
+	def step(self,action,env): #IL FAUT DONNER L ENVIRONNEMENT
 		if action==0:
-			self.cam_target_pos[0]+=1
-			self.move_cam()
+			env.cam_target_pos[0]+=1
+			env.move_cam()
 		elif action==1:
-			self.cam_target_pos[0]-=1
-			self.move_cam()
+			env.cam_target_pos[0]-=1
+			env.move_cam()
 		elif action==2:
-			self.cam_target_pos[1]+=1
-			self.move_cam()
+			env.cam_target_pos[1]+=1
+			env.move_cam()
 		elif action==3:
-			self.cam_target_pos[1]-=1
-			self.move_cam()
+			env.cam_target_pos[1]-=1
+			env.move_cam()
 		elif action==4:
-			self.cam_target_pos[2]+=1
-			self.move_cam()
+			env.cam_target_pos[2]+=1
+			env.move_cam()
 		elif action==5:
 			env.cam_target_pos[2]-=1
-			self.move_cam()
+			env.move_cam()
 		elif action==6:
 			env.cam_yaw+=1
-			self.move_cam()
+			env.move_cam()
 		elif action==7:
 			env.cam_yaw-=1
-			self.move_cam()
+			env.move_cam()
 		elif action==8:
 			env.cam_pitch+=1
-			self.move_cam()
+			env.move_cam()
 		elif action==9:
 			env.cam_pitch-=1
-			self.move_cam()
+			env.move_cam()
 		elif action==10:
 			env.cam_roll+=1
-			self.move_cam()
+			env.move_cam()
 		elif action==11:
 			env.cam_roll-=1
-			self.move_cam()
+			env.move_cam()
 		else :
 			pass
+
+		return None,self.reward(),self.termination(),None
 		  
 	
 	
