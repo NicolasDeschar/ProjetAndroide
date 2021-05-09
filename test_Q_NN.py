@@ -27,6 +27,8 @@ done=False
 
 transform2=transforms.Compose([transforms.Grayscale(1),transforms.ToTensor(), transforms.Normalize((0.1307,),   (0.3081,))])
 
+transform3=transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, ), (0.5, ))])
+
 while (not done):
     print("fonctionne ?")
     action = []
@@ -35,8 +37,9 @@ while (not done):
     p.stepSimulation()
     #state, reward, done, info = CubesEnv.step(action)
     obs = envi.getExtendedObservation()
-    test=transform(obs)
-    test=test.unsqueeze(1)
+    test=transform3(obs)
+    test=test.unsqueeze(0)
+    print(np.shape(test))
     res=net(test)
     print(res)
     ar=res.detach().numpy()
