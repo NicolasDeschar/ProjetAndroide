@@ -15,33 +15,38 @@ import toolbox as tb
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1=torch.nn.Conv2d(4,25,5)
+        self.conv1=torch.nn.Conv2d(4,8,5)
         self.pool=torch.nn.MaxPool2d(2,2)
-        self.conv2=torch.nn.Conv2d(25,100,5)
-        self.fc1=torch.nn.Linear(100*4*4,10000)
-        self.fc2=torch.nn.Linear(10000,1000)
-        self.fc3=torch.nn.Linear(1000,12)
+        self.conv2=torch.nn.Conv2d(8,15,5)
+        self.fc1=torch.nn.Linear(15*77*77,100)
+        self.fc2=torch.nn.Linear(100,12)
 
     def forward(self,x):
         x=self.pool(F.relu(self.conv1(x)))
         x=self.pool(F.relu(self.conv2(x)))
-        x=x.view(-1,100*4*4)
+        x=x.view(-1,15*77*77)
         x=F.relu(self.fc1(x))
         x=self.fc2(x)
-        x=self.fc3(x)
         return x
 
 
 #fonction executant le nn sur la sequence
-def calc_net(seq):
+def calc_net(seq,net):
     imagesi,actionsi=seq
-    output_flattend=[]
+    output_list=[]
 
     for i in range(len(imagesi)):
         transformed=tb.convert_from_image_to_tensor(imagesi[i])
         output=net(transformed)
-        output_flattend.append(np.mean(output,axis=0))
-    out_meaned=np.mean(output_flattend,axis=0)
+        data=output.detach().numpy()
+        output_list.append(data)
+    if len(output_list)==1:
+        while(len(output_list)==1):
+            output_list=output_list[0]
+        return output_list
+    out_meaned=np.mean(output_list,axis=0)
+    while(len(out_meaned)==1):
+        out_meaned=out_meaned[0]
     return out_meaned
 
 
@@ -50,7 +55,7 @@ class transition:
     def __init__(self,start,action,reward,end,episode):
         self.start=start
         self.action=action
-        self.rewrad=reward
+        self.reward=reward
         self.end=end
         self.episode=episode
 
@@ -68,7 +73,7 @@ class Sequence:
 
     #renvoie la séquence au temps i
     def get(self,i):
-        return (self.images[:i],self.actions[:i-1])
+        return (self.images[:i+1],self.actions[:i])
 
 
 
@@ -97,31 +102,36 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0
             if r<epsilon:
                 a=random.choice(actions)
             else:
-                output=calc_net(sequence.get(j))
+                output=calc_net(sequence.get(j),net)
+                print(output)
                 a=np.argmax(output)
             #step
-            state, reward, done, info=envi.step(a)
+            state, reward, done, info=envi.step(a,envi)
             #update de la sequence
             img=envi.getExtendedObservation()
             sequences[i].update(img,a)
             #enregistrement de la transition dans l'historique
             history.append(transition(j,a,reward,j+1,i))
             #mini-batch
-            sample=random.sample(history,1)
+            sample=random.sample(history,1)[0]
             sequence=sequences[sample.episode]
             #calcul de l'objectif
             if done :
                 y_i=sample.reward
                 break
             else :
-                y_i=sample.reward+alpha*np.max(calc_net(sequence.get(sample.end)))
+                y_i=sample.reward+alpha*np.max(calc_net(sequence.get(sample.end),net))
 
             #descente de gradient stochastique
             optimizer.zero_grad()
-            output=calc_net(sequence.get(sample.start))
-            t_output=torch.from_numpy(output)
-            t_y_i=torch.from_numpy(y_i)
-            loss = criterion(output[sample.action],y_i)
+            output=calc_net(sequence.get(sample.start),net)
+            t_output=torch.from_numpy(np.asarray(output))
+            t_y_i=torch.from_numpy(np.asarray(y_i))
+            t_output.requires_grad=True
+            t_y_i.requires_grad=True
+
+
+            loss = criterion(t_output.float(),t_y_i.float())
             loss.backward()
             optimizer.step()
             sequences[i]=sequence
