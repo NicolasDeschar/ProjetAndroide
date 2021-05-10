@@ -121,6 +121,15 @@ def convert_from_image_to_tensor_gray(imgArray):
     temp=transform(img)
     return temp.unsqueeze(1)
 
+def identique(res):
+	for i in res:
+		for j in res:
+			if(i!=j):
+				return False
+	return True
+    
+if(__name__=="__main__"):
+	convert_from_image_to_tensor_gray(np.ones((28,28)))
 
 #img=[np.array(Image.open("cubes/img/0/443.png")),np.array(Image.open("cubes/img/0/8221.png"))]
 #saveIMG(img)
