@@ -83,6 +83,7 @@ class CubesEnv:
 		p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos,
 				self.cam_dist,self.cam_yaw,self.cam_pitch,
 				self.cam_roll,self.cam_upAxisIndex)
+		p.stepSimulation()
 
 	def reset_cam(self,camDistance=1):
 		self.cam_target_pos=[
@@ -157,6 +158,32 @@ class CubesEnv:
 				return prob[:11].sum()/2
 			else:
 				return 0
+				
+	def reward2(self):
+		pitchprim=self.cam_pitch
+		res=[]
+		valeur=0
+		for pitch in range(pitchprim,pitchprim+8,1):
+			self.cam_pitch=pitch
+			obs=self.getExtendedObservation()
+			img=toolbox.convert_from_image_to_tensor_gray(obs)
+			prob=self.nn(img)
+			prob=prob[0].detach().to("cpu").numpy()
+			if(prob[np.argmax(prob)]>0.8):
+				if(np.argmax(prob)!=10):
+					if(np.argmax(prob)>0.9):
+						res.append(np.argmax(prob))
+						valeur=prob[np.argmax(prob)]
+						#print("classe : ",np.argmax(prob),"\nfind the number : ")
+						#self._terminated=True
+				#return prob[np.argmax(prob)]
+		if(len(res)>4 and toolbox.identique(res)):
+			print("chiffre trouve ",res[0])
+			if(min(res)>0.9):
+				return 1
+			return np.mean(res)
+		else:
+			return 0
 
 	def termination(self):
 		"""
@@ -240,7 +267,7 @@ class CubesEnv:
 		else :
 			pass
 
-		return None,self.reward(),self.termination(),None
+		return None,self.reward2(),self.termination(),None
 		  
 	
 	
