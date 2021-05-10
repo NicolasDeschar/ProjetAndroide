@@ -103,10 +103,10 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0
                 a=random.choice(actions)
             else:
                 output=calc_net(sequence.get(j),net)
-                print(output)
                 a=np.argmax(output)
             #step
             state, reward, done, info=envi.step(a,envi)
+            print("reward",reward)
             #update de la sequence
             img=envi.getExtendedObservation()
             sequences[i].update(img,a)
