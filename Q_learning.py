@@ -8,7 +8,7 @@ import cubesEnv as env
 import classifCNN as cl
 import creer_Env as ce
 import toolbox as tb
-
+import time
 
 
 
@@ -18,8 +18,8 @@ class Net(nn.Module):
         self.conv1=torch.nn.Conv2d(4,8,5)
         self.pool=torch.nn.MaxPool2d(2,2)
         self.conv2=torch.nn.Conv2d(8,15,5)
-        self.fc1=torch.nn.Linear(15*77*77,100)
-        self.fc2=torch.nn.Linear(100,12)
+        self.fc1=torch.nn.Linear(15*77*77,50)
+        self.fc2=torch.nn.Linear(50,12)
 
     def forward(self,x):
         x=self.pool(F.relu(self.conv1(x)))
@@ -32,6 +32,7 @@ class Net(nn.Module):
 
 #fonction executant le nn sur la sequence
 def calc_net(seq,net):
+    start=time.time()
     imagesi,actionsi=seq
     output_list=[]
 
@@ -43,21 +44,24 @@ def calc_net(seq,net):
     if len(output_list)==1:
         while(len(output_list)==1):
             output_list=output_list[0]
+        print("temps de calcul nn : ",time.time()-start)
         return output_list
     out_meaned=np.mean(output_list,axis=0)
     while(len(out_meaned)==1):
         out_meaned=out_meaned[0]
+    print("temps de calcul nn : ",time.time()-start)
     return out_meaned
 
 
 #structure de données stockant les transitions
 class transition:
-    def __init__(self,start,action,reward,end,episode):
+    def __init__(self,start,action,reward,end,episode,done):
         self.start=start
         self.action=action
         self.reward=reward
         self.end=end
         self.episode=episode
+        self.done=done
 
 #structure de données stockant la séquence
 class Sequence:
@@ -77,7 +81,7 @@ class Sequence:
 
 
 
-def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0.01):
+def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.5,alpha=0.1, learning_rate=0.01):
     #initialisation du NN
     actions=[0,1,2,3,4,5,6,7,8,9,10,11]
     net=Net()
@@ -105,18 +109,19 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0
                 output=calc_net(sequence.get(j),net)
                 a=np.argmax(output)
             #step
+            print("chosen action ", a)
             state, reward, done, info=envi.step(a,envi)
             print("reward",reward)
             #update de la sequence
             img=envi.getExtendedObservation()
             sequences[i].update(img,a)
             #enregistrement de la transition dans l'historique
-            history.append(transition(j,a,reward,j+1,i))
+            history.append(transition(j,a,reward,j+1,i,done))
             #mini-batch
             sample=random.sample(history,1)[0]
             sequence=sequences[sample.episode]
             #calcul de l'objectif
-            if done :
+            if sample.done :
                 y_i=sample.reward
                 break
             else :
@@ -134,7 +139,7 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.01,alpha=0.1, learning_rate=0
             loss = criterion(t_output.float(),t_y_i.float())
             loss.backward()
             optimizer.step()
-            sequences[i]=sequence
+            #sequences[i]=sequence
     env.close()
 
 
