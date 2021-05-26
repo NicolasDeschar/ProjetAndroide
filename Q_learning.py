@@ -11,7 +11,7 @@ import toolbox as tb
 import time
 
 
-
+#reseau de neurones
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -44,12 +44,12 @@ def calc_net(seq,net):
     if len(output_list)==1:
         while(len(output_list)==1):
             output_list=output_list[0]
-        print("temps de calcul nn : ",time.time()-start)
+        #print("temps de calcul nn : ",time.time()-start)
         return output_list
     out_meaned=np.mean(output_list,axis=0)
     while(len(out_meaned)==1):
         out_meaned=out_meaned[0]
-    print("temps de calcul nn : ",time.time()-start)
+    #print("temps de calcul nn : ",time.time()-start)
     return out_meaned
 
 
@@ -81,7 +81,7 @@ class Sequence:
 
 
 
-def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.5,alpha=0.1, learning_rate=0.01):
+def deep_Q(nb_episodes=100,max_iter=50,epsilon=0.5,alpha=0.1, learning_rate=0.01):
     #initialisation du NN
     actions=[0,1,2,3,4,5,6,7,8,9,10,11]
     net=Net()
@@ -100,6 +100,7 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.5,alpha=0.1, learning_rate=0.
         sequence=Sequence(envi.getExtendedObservation())
         sequences.append(sequence)
         for j in range(max_iter):
+            print("iteration ",j)
 
             #choix epsilon-greedy de l'action
             r=random.random()
@@ -109,11 +110,9 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.5,alpha=0.1, learning_rate=0.
                 output=calc_net(sequence.get(j),net)
                 a=np.argmax(output)
             #step
-            print("chosen action ", a)
             state, reward, done, info=envi.step(a,envi)
-            print("reward",reward)
+            print(reward)
             #update de la sequence
-            img=envi.getExtendedObservation()
             sequences[i].update(img,a)
             #enregistrement de la transition dans l'historique
             history.append(transition(j,a,reward,j+1,i,done))
@@ -139,7 +138,6 @@ def deep_Q(nb_episodes=100,max_iter=5000,epsilon=0.5,alpha=0.1, learning_rate=0.
             loss = criterion(t_output.float(),t_y_i.float())
             loss.backward()
             optimizer.step()
-            #sequences[i]=sequence
     env.close()
 
 
