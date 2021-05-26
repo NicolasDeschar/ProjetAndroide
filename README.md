@@ -1,7 +1,7 @@
-# ProjetAndroide
+## ProjetAndroide
 Développement d'environnements Pybullet Gym pour l'évaluation de politiques de perception active
 
-Pour lancer le projet :
+# Pour lancer le projet :
 
   installer les packages
   
@@ -29,7 +29,7 @@ Pour lancer le projet :
 Executer projet.py
 
 
-#Description des fichiers :
+# Description des fichiers :
 
 Q_learning.py contient les fonctions nécessaires à l'algorithme deep-Q
 
