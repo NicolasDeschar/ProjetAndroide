@@ -17,15 +17,15 @@ import shutil
 transf =transforms.Compose([transforms.Grayscale(1),transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
 
 def discreteProb(p):
-        # renvoie un nombre aleatoire selon la table de probabilite p
-        r = np.random.random()
-        cumprob = np.hstack((np.zeros(1), np.cumsum(p)))
-        sample = -1
-        for j in range(p.size):
-            if (r > cumprob[j]) & (r <= cumprob[j+1]):
-                sample = j
-                break
-        return sample
+    # renvoie un nombre aleatoire selon la table de probabilite p
+    r = np.random.random()
+    cumprob = np.hstack((np.zeros(1), np.cumsum(p)))
+    sample = -1
+    for j in range(p.size):
+        if (r > cumprob[j]) & (r <= cumprob[j+1]):
+            sample = j
+            break
+    return sample
 
 
 def random_policy(env):
@@ -84,23 +84,19 @@ def getRewardProb(RN,img,path="ImageCam/test",batch_size=1) :
     return prob
 
 
-def getListOutputCNN(output):
-    res=[]
-    for i,prob in enumerate(output):
-        res.append(prob.numpy())
-    return res
+
                
-#convertit une image de la forme np.array en Tensor pyTorch
+#convertit une image de la forme np.array en Tensor 
 def convert_from_image_to_tensor(img):
     """
-    input :
+    entree :
     img : une image ou un np.array(image) , torch.from_numpy(image)
     """
     transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, ), (0.5, ))])
     temp=transform(img)
     return temp.unsqueeze(0)
 
-#convertit une image de la forme np.array en Tensor pyTorch en la passant en noir et blanc
+#convertit une image de la forme np.array en Tensor en la passant en niveau de gris
 def convert_from_image_to_tensor_gray(imgArray):
     """
     input :
@@ -109,16 +105,16 @@ def convert_from_image_to_tensor_gray(imgArray):
     img=Image.fromarray(imgArray)
     transform=transforms.Compose([transforms.Resize((28,28)),transforms.Grayscale(1),transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))])
     temp=transform(img)
-    return temp.unsqueeze(1)
+    return temp.unsqueeze(0)
 
 #renvoie True si tous les éléments de res sont identiques
 def identique(res):
-	for i in res:
-		for j in res:
-			if(i!=j):
-				return False
-	return True
+    for i in res:
+	for j in res:
+	    if(i!=j):
+	        return False
+    return True
     
 if(__name__=="__main__"):
-	convert_from_image_to_tensor_gray(np.ones((28,28)))
+    convert_from_image_to_tensor_gray(np.ones((28,28)))
     
