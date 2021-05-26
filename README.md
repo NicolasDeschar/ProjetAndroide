@@ -3,13 +3,13 @@ Développement d'environnements Pybullet Gym pour l'évaluation de politiques de
 
 ## Pour lancer le projet :
 
-  installer les packages
+  Installer les packages
   
   -pytorch
   
   -torchvision
   
-  -rezizeimage
+  -python-resize-image
   
   -PIL
   
@@ -17,9 +17,7 @@ Développement d'environnements Pybullet Gym pour l'évaluation de politiques de
   
   -pybullet
   
-  -pybullet_data
-  
-  -pygym
+  -gym 
   
   
   
