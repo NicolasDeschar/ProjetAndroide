@@ -39,32 +39,32 @@ class CubesEnv:
 			height=3,lengthMin=-3,wMax=3,lMax=3,nb_action=12,gap=2,
 			upAxisIndex=2,pixel=320,actions_list=[]):
 		self.nn=None #reseau de neurones du classifieur
-		self._widthMin=widthMin #taille de l 'env
-		self._height=height
-		self._lengthMin=lengthMin
-		self._widthMax=wMax
-		self._lengthMax=lMax
-		self._pixel=pixel
-		self._cubesPos=[]
-		self.nbCubes=nb_cubes
-		self.urdfNames=urdf_names
-		self.nb_states=(wMax-widthMin)*height*(lMax-widthMin)
-		self.nbAction=nb_action
+		self._widthMin=widthMin #largeur minimale de l environnement
+		self._height=height     #hauteur de l environnement
+		self._lengthMin=lengthMin  #longeur minimale de l env
+		self._widthMax=wMax       #largeur maximale
+		self._lengthMax=lMax      #longueur maximale
+		self._pixel=pixel     #taille de l image capturee par la camera pixel *pixel
+		self._cubesPos=[]   #position initiale des cubes
+		self.nbCubes=nb_cubes #nombre de cubes dans l env
+		self.urdfNames=urdf_names  
+		self.nb_states=(wMax-widthMin)*height*(lMax-widthMin)  #nombre d etats
+		self.nbAction=nb_action  #nombre d actions
 		self.gap=gap #distance minimale entre deux cubes
 		self.action_space=SimpleActionSpace(actions_list,nactions=nb_action)
 
 		self.cam_target_pos=[np.random.randint(0,wMax-widthMin)+widthMin,
 		np.random.randint(0,lMax-lengthMin)+lengthMin,
-		np.random.randint(0,height)]
+		np.random.randint(0,height)]        
 		self.cam_dist=1
 		self.cam_yaw=np.random.randint(0,360)
 		self.cam_roll=np.random.randint(0,360)
 		self.cam_pitch=np.random.randint(0,360)
-		self.cam_upAxisIndex = upAxisIndex
+		self.cam_upAxisIndex = upAxisIndex #axe verticale de l env 2 -> axe z
 		self._render=render
 		self.robotID=[] #id des cubes
 		self.h=h #hauteur des cubes
-		
+		self.reward=0 #la recompense 
 		self.projMatrix = [ 1.0825318098068237, 0.0, 0.0, 0.0, 0.0, 1.732050895690918, 0.0,
 		 0.0, 0.0, 0.0, -1.0002000331878662, -1.0, 0.0, 0.0, -0.020002000033855438, 0.0]
 		#initialisation des positions
@@ -190,6 +190,7 @@ class CubesEnv:
 		if(len(res)>6 and toolbox.identique(res)):
 			print("chiffre trouve ",res[0])
 			if(min(res)>0.9):
+				self.reward+=1
 				return 1
 			return np.mean(res)
 		else:
@@ -210,7 +211,7 @@ class CubesEnv:
 			return True
 		return False
 
-	def stepAlea(self,action):
+	def stepAlea(self,action): #mouvement alea
 		p.stepSimulation()
 		viewMat = p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos, self.cam_dist, self.cam_yaw, 
 													  self.cam_pitch, self.cam_roll,self.cam_upAxisIndex)
