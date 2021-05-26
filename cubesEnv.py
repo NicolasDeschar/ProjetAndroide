@@ -17,7 +17,7 @@ import torch.nn.functional as F
 from torch.autograd import Function
 
 
-class SimpleActionSpace:  # class describing the action space of the markov decision process
+class SimpleActionSpace:  # class decrivant l'espace des actions
 	def __init__(self, action_list=[], nactions=0):
 		if len(action_list) == 0:
 			self.actions = np.array([a for a in range(nactions)])
@@ -26,8 +26,8 @@ class SimpleActionSpace:  # class describing the action space of the markov deci
 		self.size = len(self.actions)
 
 	def sample(self, prob_list=None):
-		# returns an action drawn according to the prob_list distribution,
-		# if the param is not set, then it is drawn from a uniform distribution
+		# renvoie l'action choisie selon la distribution prob_list
+		# si prob_list==None, alors l'action est choisie selon une distribution uniforme
 		if prob_list is None:
 			prob_list = np.ones(self.size)/self.size
 		index = discreteProb(prob_list) 
@@ -35,10 +35,10 @@ class SimpleActionSpace:  # class describing the action space of the markov deci
 
 
 class CubesEnv:
-	def __init__(self,h,nb_cubes,render,urdf_names,widthMin=-10,
-			height=10,lengthMin=-10,wMax=10,lMax=10,nb_action=12,gap=2,
+	def __init__(self,h,nb_cubes,render,urdf_names,widthMin=-3,
+			height=3,lengthMin=-3,wMax=3,lMax=3,nb_action=12,gap=2,
 			upAxisIndex=2,pixel=320,actions_list=[]):
-		self.nn=None #neural network for rewards
+		self.nn=None #reseau de neurones du classifieur
 		self._widthMin=widthMin #taille de l 'env
 		self._height=height
 		self._lengthMin=lengthMin
@@ -50,7 +50,7 @@ class CubesEnv:
 		self.urdfNames=urdf_names
 		self.nb_states=(wMax-widthMin)*height*(lMax-widthMin)
 		self.nbAction=nb_action
-		self.gap=gap #distance between 2 cubes and the environnement
+		self.gap=gap #distance minimale entre deux cubes
 		self.action_space=SimpleActionSpace(actions_list,nactions=nb_action)
 
 		self.cam_target_pos=[np.random.randint(0,wMax-widthMin)+widthMin,
@@ -62,13 +62,13 @@ class CubesEnv:
 		self.cam_pitch=np.random.randint(0,360)
 		self.cam_upAxisIndex = upAxisIndex
 		self._render=render
-		self.robotID=[] #id of the cubes in the environnement
-		self.h=h #height of cubes in the environnement
+		self.robotID=[] #id des cubes
+		self.h=h #hauteur des cubes
 		
 		self.projMatrix = [ 1.0825318098068237, 0.0, 0.0, 0.0, 0.0, 1.732050895690918, 0.0,
 		 0.0, 0.0, 0.0, -1.0002000331878662, -1.0, 0.0, 0.0, -0.020002000033855438, 0.0]
-		#create starting positions
-		self._observation=None  #an image of the camera
+		#initialisation des positions
+		self._observation=None  
 		while(len(self._cubesPos)<nb_cubes):
 			pos= [np.random.randint(self.gap,self._widthMax-self._widthMin-self.gap,1)+self._widthMin,
 			np.random.randint(self.gap,self._lengthMax-self._lengthMin-self.gap,1)+self._lengthMin,self.h]
@@ -78,13 +78,15 @@ class CubesEnv:
 		if(self._render):
 			p.connect(p.GUI)
 		self.reset()
-	
+
+	#deplace la camera selon les paramètres de CubeEnv
 	def move_cam(self):
-		p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos,
+		p.computeViewMatrixFromYawPitchRoll(self.   cam_target_pos,
 				self.cam_dist,self.cam_yaw,self.cam_pitch,
 				self.cam_roll,self.cam_upAxisIndex)
 		p.stepSimulation()
 
+	#place la camera à une position aleatoire selon les limites de l'environnement
 	def reset_cam(self,camDistance=1):
 		self.cam_target_pos=[
 		np.random.randint(0,self._widthMax-self._widthMin)+self._widthMin,
@@ -130,13 +132,14 @@ class CubesEnv:
 
 	def posDiff(self,pos):
 		"""
-		check the gap between two cubes 
+		renvoie True si les cubes sont suffisamment espacés
 		"""
 		for i in self._cubesPos:
 			if(abs(pos[0]-i[0])<self.gap and abs(pos[1]-i[1])<self.gap):
 				return False
 		return True
 
+	#renvoie sous la forme np_array l'image de la caméra
 	def getExtendedObservation(self,w=320,h=320):
 		viewMat = p.computeViewMatrixFromYawPitchRoll(self.cam_target_pos, 
 			self.cam_dist, self.cam_yaw, self.cam_pitch, self.cam_roll,self.cam_upAxisIndex)
@@ -146,38 +149,45 @@ class CubesEnv:
 		self._observation = np_img_arr
 		return self._observation
 
+	#fonction de calcul de la récompense
 	def reward(self):
 		obs=self.getExtendedObservation()
 		img=toolbox.convert_from_image_to_tensor_gray(obs)
 		prob=self.nn(img)
 		prob=prob[0].detach().to("cpu").numpy()
-		if(prob[np.argmax(prob)]>0.5):
-			return prob[np.argmax(prob)]
+		print(prob)
+		props=prob[:10]
+		if(props[np.argmax(props)]>0.5):
+			return props[np.argmax(props)]
 		else:
-			if(prob[:11].sum()>prob[-1]):
-				return prob[:11].sum()/2
+			if(prob[:10].sum()>prob[-1]):
+				return prob[:10].sum()/2
 			else:
 				return 0
-				
+	
+	#fonction de calcul de la récompense	
 	def reward2(self):
 		pitchprim=self.cam_pitch
+		yawprim=self.cam_yaw
 		res=[]
 		valeur=0
-		for pitch in range(pitchprim,pitchprim+8,1):
+		for pitch in range(pitchprim-4,pitchprim+4,1):
 			self.cam_pitch=pitch
-			obs=self.getExtendedObservation()
-			img=toolbox.convert_from_image_to_tensor_gray(obs)
-			prob=self.nn(img)
-			prob=prob[0].detach().to("cpu").numpy()
-			if(prob[np.argmax(prob)]>0.8):
-				if(np.argmax(prob)!=10):
-					if(np.argmax(prob)>0.9):
-						res.append(np.argmax(prob))
-						valeur=prob[np.argmax(prob)]
+			for yaw in range(yawprim-4,pitchprim+4,1):
+				self.cam_yaw=yaw
+				obs=self.getExtendedObservation()
+				img=toolbox.convert_from_image_to_tensor_gray(obs)
+				prob=self.nn(img)
+				prob=prob[0].detach().to("cpu").numpy()
+				if(prob[np.argmax(prob)]>0.8):
+					if(np.argmax(prob)!=10):
+						if(np.argmax(prob)>0.9):
+							res.append(np.argmax(prob))
+							valeur=prob[np.argmax(prob)]
 						#print("classe : ",np.argmax(prob),"\nfind the number : ")
 						#self._terminated=True
 				#return prob[np.argmax(prob)]
-		if(len(res)>4 and toolbox.identique(res)):
+		if(len(res)>6 and toolbox.identique(res)):
 			print("chiffre trouve ",res[0])
 			if(min(res)>0.9):
 				return 1
@@ -185,21 +195,20 @@ class CubesEnv:
 		else:
 			return 0
 
+	#fonction de calcul de la récompense
+	def reward3(self):
+		obs=self.getExtendedObservation()
+		img=toolbox.convert_from_image_to_tensor_gray(obs)
+		prob=self.nn(img)
+		prob=prob[0].detach().to("cpu").numpy()
+		print(prob)
+		return max(prob[:10])
+
+	#renvoie True si le cube est correctement detecté
 	def termination(self):
-		"""
-		indique quand l agent a fini de trouver tous les chiffres
-		"""
-		if():
+		if(reward >0.99):
 			return True
 		return False
-
-	def getAction(self):
-		return self.getTypeAction(np.random.randint(self.nbAction))
-	
-	def getTypeAction(self,typeAction):
-		isForward=np.random.choices([-1,1])
-		if(typeAction==0):
-			self.cam_target_pos[0]+=isForward
 
 	def stepAlea(self,action):
 		p.stepSimulation()
@@ -209,7 +218,7 @@ class CubesEnv:
 		reward = self.reward()
 		return self._observation, reward, done, {}
 
-
+	#fonction de test de l'environnement
 	def testEnv(self):
 		for i in range(1000):
 			p.stepSimulation()
@@ -226,8 +235,8 @@ class CubesEnv:
 
 				
 
-
-	def step(self,action,env): #IL FAUT DONNER L ENVIRONNEMENT
+	#réalise un pas de l'environnement en executant l'action action
+	def step(self,action,env):
 		if action==0:
 			env.cam_target_pos[0]+=1
 			env.move_cam()
@@ -267,7 +276,7 @@ class CubesEnv:
 		else :
 			pass
 
-		return None,self.reward2(),self.termination(),None
+		return None,self.reward3(),self.termination(),None
 		  
 	
 	
