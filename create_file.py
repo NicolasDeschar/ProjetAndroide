@@ -2,8 +2,12 @@ import shutil
 import os
 import numpy as np
 
-#contains the names of all the images
+
 def createNames(pathImg="cubes/img"):
+	"""
+	pathImg doit contenir que des images
+	renvoie la liste des noms des elements de pathImg
+	"""
 	obj_name={}
 	for i in range(10):
 		path =pathImg+chr(47)+str(i)
@@ -15,12 +19,22 @@ def createNames(pathImg="cubes/img"):
 	return obj_name
 
 def create_mtl(destination,photo):
+	"""
+	entree : 
+	photo : texture a mettre sur une des faces du cube
+	destination est le chemin ou enregistrer ce fichier
+	
+	creer le fichier de texture pour les cubes
+	"""
 	shutil.copyfile("file_mtl.mtl",destination)
 	f=open(destination,"a")
 	f.write("\n  map_Kd "+photo)
 	f.close()
 
 def create_obj(destination,mtl_name):
+	"""
+	creer la forme de la cube en integrant la texture
+	"""
 	shutil.copyfile("file_cube.obj",destination)
 	f=open(destination,"r")
 	lines=f.readlines()
@@ -30,11 +44,14 @@ def create_obj(destination,mtl_name):
 	f.writelines(lines)
 	f.close()
 
-def create_urdf(destination,object):
+def create_urdf(destination, objet):
+	"""
+	creer le fichier urdf pour la cube object
+	"""
 	shutil.copyfile("cube_individual.urdf",destination)
 	f=open(destination,"r")
 	lines=f.readlines()
-	lines[19]="         <mesh filename='"+object+"' scale='1 1 1'/>"
+	lines[19]="         <mesh filename='"+objet+"' scale='1 1 1'/>"
 	f.close()
 	f=open(destination,"w")
 	f.writelines(lines)
@@ -42,8 +59,11 @@ def create_urdf(destination,object):
 
 
 
-def create(path="cubes"):
-	obj_name=createNames()
+def create(path="cubes",pathIm="cubes/img"):
+	"""
+	creer tous les fichiers urdf mtl et obj pour les images du dossier 
+	"""
+	obj_name=createNames(pathImg=pathIm)
 	for i in obj_name:
 		for j in obj_name[i]:
 			dest=path+chr(47)+str(i)+"_"+str(j)
