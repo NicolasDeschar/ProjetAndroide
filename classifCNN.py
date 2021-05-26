@@ -20,8 +20,8 @@ class CNN(torch.nn.Module):
         self.conv1=torch.nn.Conv2d(1,6,5)
         self.pool=torch.nn.MaxPool2d(2,2)
         self.conv2=torch.nn.Conv2d(6,14,5)
-        self.fc1=torch.nn.Linear(14*4*4,30)
-        self.fc2=torch.nn.Linear(30,40)
+        self.fc1=torch.nn.Linear(14*4*4,40)
+        self.fc2=torch.nn.Linear(40,40)
         self.fc3=torch.nn.Linear(40,11)
     
     def forward(self,x):
