@@ -23,4 +23,4 @@ Pour lancer le projet :
   
   
   
-  Extraire les bases MNIST contenues dans mnist_png.zip.001 et mnist_png.zip.002
+  Extraire les bases d'apprentissage du classifieur contenues dans mnist_png.zip.001 et mnist_png.zip.002
