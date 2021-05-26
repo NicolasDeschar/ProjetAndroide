@@ -13,4 +13,6 @@ Pour lancer le projet :
   -pybullet
   -pybullet_data
   -pygym
+  
+  
   Extraire les bases MNIST contenues dans mnist_png.zip.001 et mnist_png.zip.002
