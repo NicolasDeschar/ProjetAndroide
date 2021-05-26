@@ -49,16 +49,3 @@ if __name__=='__main__':
     end=time.time()
     print("Taux de bonne classification testing: {}".format(np.where(ytest == Y_test_hat, 1, 0).mean()))
     print("Temps pour classifier les donnees d'entrainement ",end-start)
-    """
-    
-
-    
-    start=time.time()
-    mnist2=Image.open("ft/magazine-unlock-01-2.3.1152-_82D7E759A7CE59589C97850534E61A53.png").convert('L')
-    cover=resizeimage.resize_cover(mnist2, [28, 28])
-    cover=np.array(cover).reshape(28*28)
-    print(cover.shape,cover[0],len(cover))
-    print("L'image est de classe :", np.argmax(logpobsBernoulli(cover, theta)))
-    end=time.time()
-    print("temps ",end-start)
-    """
