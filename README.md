@@ -11,9 +11,9 @@ Développement d'environnements Pybullet Gym pour l'évaluation de politiques de
   
   -python-resize-image
   
-  -Pillow
+  -pillow
   
-  -pylab
+  -matplotlib
   
   -pybullet
   
