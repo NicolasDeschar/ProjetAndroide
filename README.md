@@ -47,6 +47,8 @@ projet.py lance l'ensemble du projet, donc l'algorithme deep-Q
 
 test.py est un executable générant un environnement contenant des cubes
 
+rapport_projet.pdf est le rapport de ce projet
+
 ## Description des Dossiers :
 Cubes contient un ensemble de fichiers .urdf, .mtl, .obj utilisable pour les placer dans l'environnement pybullet et un sous ensemble d'images de la base MNIST dans le dossier img
 
