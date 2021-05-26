@@ -70,7 +70,15 @@ def create_dataCNN(path="ImageCam/test",trans=transf):
     return images,loader
 
 def getOutputCNN(RN,batch_size,images):
-    if(batch_size==1):
+    """
+    entree : 
+    RN : reseau de neurone
+    batch_size : nombre d images par classes
+    
+    sortie : la sortie du reseau pour les images donnees
+    renvoie la sortie du reseau de neurones pour les images : images
+    """
+    if(batch_size==1): 
         return RN(images).detach().numpy()
     else:
         output=RN(images) #x contient batch_size images
@@ -79,9 +87,9 @@ def getOutputCNN(RN,batch_size,images):
 def getRewardProb(RN,img,path="ImageCam/test",batch_size=1) :
     saveIMG(img)
     images,loader=create_dataCNN()
-    prob=getOutputCNN(RN,batch_size,images)
+    sortie=getOutputCNN(RN,batch_size,images)
     deleteIMG()
-    return prob
+    return sortie
 
 
 
@@ -99,7 +107,7 @@ def convert_from_image_to_tensor(img):
 #convertit une image de la forme np.array en Tensor en la passant en niveau de gris
 def convert_from_image_to_tensor_gray(imgArray):
     """
-    input :
+    entree :
     img : un np.array(image)
     """
     img=Image.fromarray(imgArray)
