@@ -19,36 +19,30 @@ from torch.autograd import Function
 import cubesEnv as CE
 
 def start_env():
+    #fonction initialisant le classifieur, choisissant les cubes et lancant l'environnement
     transf=transforms.Compose([transforms.Resize((28,28)),transforms.Grayscale(1),
         transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
     model=classifCNN.CNN()
     data,loader=classifCNN.create_ClassifDATA(50,transf,"mnist_png/training",True)
-    classifCNN.CNNtrain(2,model,loader) #entrainement du model
-    names=create_file.select_cubes({0:3,1:4})
-    env=CE.CubesEnv(h=2,nb_cubes=7,render=True,urdf_names=names)
+    classifCNN.CNNtrain(2,model,loader) #entrainement du modele
+    #names=create_file.select_cubes({0:3,1:4})
+    names=create_file.select_cubes({5:6})
+    env=CE.CubesEnv(h=2,nb_cubes=1,render=True,urdf_names=names)
     env.nn=model
     return env
 
 def test_cam():
     p.computeViewMatrixFromYawPitchRoll([10,10,10],2,5,-15,10,2)
 
-"""
-def reset_env():
-    CubesEnv.cam_target_pos=[np.random.randint(gap,width-gap),np.random.randint(gap,length-gap),np.random.randint(gap,height-gap)]
-    self.cam_dist=1
-    self.cam_yaw=np.random.randint(0,360)
-    self.cam_roll=np.random.randint(0,360)
-    self.cam_pitch=np.random.randint(0,360)
-    
-    CubesEnv.reset()
-"""
+
+#reinitialise la position de la camera
 def reset_env(env):
-    env.reset_cam() 
-    env.reset()
+    env.reset_cam()
 
 
+#termine la simulation
 def stop(env):
-    env.close() #CHANGER et pas CubesEnv
+    env.close()
 
 
 def get_image(env):
