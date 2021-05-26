@@ -89,6 +89,10 @@ def odd(correct,total):
     return res
 
 def testNbCouche(nbEntr=2):
+    """
+    renvoie les temps pour entrainement et test et les erreurs
+    
+    """
     ltimetrain=[]
     ltimetest=[]
     listloss=[]
@@ -115,7 +119,13 @@ def testNbCouche(nbEntr=2):
         print("\n _____________________________\n")
     return ltimetrain,ltimetest,listloss
 
-def plot(savename,ltimetrain,ltimetest,listloss):
+def plot(savename,ltimetrain,ltimetest,listloss): #fonction pour tracer les courbes d erreurs
+    """
+    entree : 
+    ltimetrain : temps pour entrainement
+    ltimetest : temps pour test
+    listloss : liste de la moyenne des erreurs
+    """
     fig,axes=plt.subplots(3)
     fig.set_size_inches(20,15)
     plt.grid()
