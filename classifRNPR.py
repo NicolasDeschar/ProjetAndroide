@@ -42,6 +42,7 @@ class RN(torch.nn.Module):
         #return F.log_softmax(x,dim=1)
         return F.softmax(x,dim=1)
     
+#fonction d'entrainement du classifieur
 def train(nbEntr,NN,loader,lr=1e-3):
     start=time.time()
     optimizer=torch.optim.Adam(NN.parameters(),lr) #lr : learning rate
@@ -59,7 +60,7 @@ def train(nbEntr,NN,loader,lr=1e-3):
     #print("Time execution of ", nbEntr ," trainings of ",end-start," s" )
     return lloss
 
-
+#test de performance du classifieur sur le dataset loader
 def test(loader,NN):
     start=time.time()
     correct_class =torch.zeros((11))
