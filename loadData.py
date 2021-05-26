@@ -1,5 +1,5 @@
 #fichier pour utilisation de la methode du maximum de vraisemblance
-#Pour le classifML.py
+#Pour creer les donnees pour le classifMV.py
 
 import numpy as np
 import time
@@ -29,16 +29,16 @@ def loadDataMNIST(path="mnist_png"):
 	return data_test,data_train
 
 def getDataMNIST(test,train,isRandom=False):
-	"""return the image data : 
+	"""renvoie les donnees d images : 
 	x_test,y_test,x_train,y_train
 
 	x_test shape : (number of img, 28*28) array(array)
 	y_test shape : (number of img) array(int)
 
 	path of mnist_png
-	isRandom ==True modify the sequence
+	isRandom ==True modifier l ordre des images dans liste d images
 	"""
-	#modify the sequence
+	#modifier la sequence
 	if(isRandom):
 		np.random.shuffle(train)
 		np.random.shuffle(test)
@@ -55,6 +55,9 @@ def getDataMNIST(test,train,isRandom=False):
 	return np.array(x_test),np.array(y_test),np.array(x_train),np.array(y_train)
 
 def class10(path,className=10):
+	"""
+	creer la sequence d images pour la 11e classe
+	"""
 	files = os.listdir(path)
 	imgAlea=[]
 	i=0
@@ -65,12 +68,15 @@ def class10(path,className=10):
 	return np.array(imgAlea)
 
 def getDataPlus(test,train,imgAleatrain,imgAleaTest,isRandom=False):
+	"""
+	combiner les listes d images 
+	"""
 	"""ajout de la classe d images quelconques"""
 	data_test=np.vstack((test,imgAleaTest))
 	data_train=np.vstack((train,imgAleatrain))
 	return getDataMNIST(data_test,data_train)
 
-if __name__=='__main__':
+if __name__=='__main__': #creation des donnees d images
 	start=time.time()
 	dtest,dtrain=loadDataMNIST()
 	xtest,ytest,xtrain,ytrain=getDataMNIST(dtest,dtrain)
