@@ -84,7 +84,7 @@ def create_plane(W,H,L,destination="plane/plane.urdf"):
 
 
 def select_cubes(dic):
-	"""select nb names of cube, figure is given by dic"""
+	"""selectionner le nombre de noms de cubes, les chiffres inscrits dans le cube est defini par le dictionnaire"""
 	name=[]
 	obj_name=create()
 	for number in dic:
